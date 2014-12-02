@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+        <form method="post" action="/add">
+            <input type="text" name="name"/><br/>
+            <input type="text" name="author"/><br/>
+            <textarea rows=4 cols=55 name="body"></textarea>
+        <input type="submit">
+        </form>
+{% end %}

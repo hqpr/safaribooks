@@ -6,7 +6,7 @@ import tornado.web
 from tornado.options import define, options
 import riak
 import datetime
- 
+
 # mongodb example
 # https://www.safaribooksonline.com/library/view/introduction-to-tornado/9781449312787/ch04.html
 # riak api
@@ -45,7 +45,9 @@ class Application(tornado.web.Application):
         handlers = [
             (r'/', IndexHandler),
             (r'/add', AddPostHandler),
-            (r'/post/(\d+)', PostHandler)
+            (r'/post/(\d+)', PostHandler),
+            (r'/edit/(\d+)', EditPostHandler),
+            (r'/delete/(\d+)', DeletePostHandler)
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -59,22 +61,56 @@ class Application(tornado.web.Application):
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         lst = []
-        x = post_bucket.get_keys()
-        for i in range(1, len(x)+1):
+        x = sorted(post_bucket.get_keys())
+        for i in range(int(x[0]), len(x)+1):
             entries = post_bucket.get(str(i)).data
             lst.append(entries)
 
         self.render(
             "index.html",
             title="Home Page",
-            data=lst
+            data=lst,
+            uri=x
         )
 
  
 class PostHandler(tornado.web.RequestHandler):
     def get(self, post_id):
         widget = post_bucket.get(post_id).data
-        self.render("single.html", data=widget)
+        self.render("single.html", data=widget, key=post_id)
+
+    # def delete(self, post_id):
+    #     post = post_bucket.get(post_id)
+    #     post.delete()
+    #     self.redirect('/')
+
+
+class EditPostHandler(tornado.web.RequestHandler):
+    def get(self, post_id):
+        post = post_bucket.get(post_id)
+        self.render('edit.html', data=post.data, k=post_id)
+
+    def post(self, post_id):
+        name = self.get_argument('name')
+        body = self.get_argument('body')
+        author = self.get_argument('author')
+        entry = post_bucket.get(post_id)
+        entry.data['name'] = name
+        entry.data['body'] = body
+        entry.data['author'] = author
+        entry.store()
+        self.redirect("/post/%s" % post_id)
+
+
+class DeletePostHandler(tornado.web.RequestHandler):
+    def get(self, post_id):
+        widget = post_bucket.get(post_id).data
+        self.render("delete.html", data=widget, key=post_id)
+
+    def post(self, post_id):
+        post = post_bucket.get(post_id)
+        post.delete()
+        self.redirect('/')
 
 
 class AddPostHandler(tornado.web.RequestHandler):

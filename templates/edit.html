@@ -1,18 +1,20 @@
 {% extends "base.html" %}
-{% block title %} Add new post {% end %}
+{% block title %} Edit {{ data['name'] }} article{% end %}
 {% block body %}
 
-<form class="form-horizontal" method="post" action="/add">
+
+<form class="form-horizontal" method="post" action="/edit/{{ k }}">
     <fieldset>
 
         <!-- Form Name -->
-        <legend>Add new post</legend>
+        <legend>Edit post</legend>
 
         <!-- Text input-->
         <div class="form-group">
             <label class="col-md-4 control-label" for="name">Title</label>
             <div class="col-md-4">
-                <input id="name" name="name" type="text" placeholder="" class="form-control input-md" required="">
+                <input id="name" name="name" type="text" placeholder="" class="form-control input-md" required=""
+                       value="{{ data['name'] }}">
 
             </div>
         </div>
@@ -21,7 +23,8 @@
         <div class="form-group">
             <label class="col-md-4 control-label" for="author">Your name</label>
             <div class="col-md-4">
-                <input id="author" name="author" type="text" placeholder="" class="form-control input-md" required="">
+                <input id="author" name="author" type="text" placeholder="" class="form-control input-md" required=""
+                        value="{{ data['author'] }}">
 
             </div>
         </div>
@@ -30,7 +33,7 @@
         <div class="form-group">
             <label class="col-md-4 control-label" for="body">Content</label>
             <div class="col-md-4">
-                <textarea class="form-control" id="body" name="body"></textarea>
+                <textarea class="form-control" id="body" name="body">{{ data['body'] }}</textarea>
             </div>
         </div>
 
@@ -47,7 +50,7 @@
 
         <!-- Button (Double) -->
         <div class="form-group">
-            <label class="col-md-4 control-label" for="button1id">Publish?</label>
+            <label class="col-md-4 control-label" for="button1id">Save changes?</label>
             <div class="col-md-8">
                 <button type="submit" id="button1id" name="button1id" class="btn btn-success">Yes</button>
                 <button type="reset" id="button2id" name="button2id" class="btn btn-danger">No</button>

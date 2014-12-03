@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %} Edit {{ data['name'] }} article {% end %}
+{% block body %}
+<form class="form-horizontal" method="post" action="/delete/{{ key }}">
+    <fieldset>
+
+        <!-- Form Name -->
+        <legend>Delete {{ data['name'] }}?</legend>
+
+        <!-- Button (Double) -->
+        <div class="form-group">
+            <label class="col-md-4 control-label" for="button1id">Are you sure?</label>
+            <div class="col-md-8">
+                <button type="submit" id="button1id" name="button1id" class="btn btn-success">Yes</button>
+                <button type="reset" id="button2id" name="button2id" class="btn btn-danger">No</button>
+            </div>
+        </div>
+
+    </fieldset>
+</form>
+{% end %}

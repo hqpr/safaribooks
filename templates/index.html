@@ -3,17 +3,17 @@
 {% block title %} {{ title }} {% end %}
  
  
-{% block header %}
-    <h1>All entries</h1>
-{% end %}
- 
+
+
+
+
 {% block body %}
 <div id="page-content-wrapper">
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">
                 {% for d in data %}
-                    <h1><a href="/post/">{{ d['name'] }}</a></h1>
+                    <h1><a href="/post/{{ uri[0] }}">{{ d['name'] }}</a></h1>
                     <p><span class="glyphicon glyphicon-time"></span> {{ d['created_date'] }}</p>
                     <p>by <a href="">{{ d['author'] }}</a></p>
                     <p>{{ d['body'] }}</p>

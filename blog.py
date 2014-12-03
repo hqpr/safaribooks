@@ -5,33 +5,39 @@ import tornado.options
 import tornado.web
 from tornado.options import define, options
 import riak
+import datetime
  
 # mongodb example
 # https://www.safaribooksonline.com/library/view/introduction-to-tornado/9781449312787/ch04.html
 # riak api
-# http://docs.basho.com/riak/latest/dev/taste-of-riak/querying-python/
+# http://docs.basho.com/riak/latest/dev/taste-of-riak/querying-python/ - samples of data
 # http://books.google.com.ua/books?id=B-krWzb6KMQC&pg=PA9&lpg=PA9&dq=save_to_db+tornado&source=bl&ots=3FYi72dccm&sig=trRQQpd7o0cD0mNXZtv-8h8q4H4&hl=ru&sa=X&ei=qRx-VNXbL8bnywPBp4LYCQ&ved=0CCEQ6AEwAA#v=onepage&q=save_to_db%20tornado&f=false
  
- 
-client = riak.RiakClient(pb_port=8087, protocol='pbc')
+port = 8087
+
+client = riak.RiakClient(pb_port=port, protocol='pbc')
 post = {
+    'type': 'post',
     'post_id': 1,
     'name': "Black Hole",
     'title': "Black Hole Article",
     'author': "Wikipedia",
     'created_date': "2014-12-02 14:30:26",
-    'body': "A black hole is a region of spacetime from which gravity prevents anything, including light, from escaping.[1] The theory of general relativity predicts that a sufficiently compact mass will deform spacetime to form a black hole.[2] The boundary of the region from which no escape is possible is called the event horizon. Although crossing the event horizon has enormous effect on the fate of the object crossing it, it appears to have no locally detectable features. In many ways a black hole acts like an ideal black body, as it reflects no light.[3][4] Moreover, quantum field theory in curved spacetime predicts that event horizons emit Hawking radiation, with the same spectrum as a black body of a temperature inversely proportional to its mass. This temperature is on the order of billionths of a kelvin for black holes of stellar mass, making it all but impossible to observe."
+    'body': "A black hole is a region of spacetime from which gravity prevents anything, including light, "
+            "from escaping. The theory of general relativity predicts that a sufficiently compact mass will "
+            "deform spacetime to form a black hole."
 }
  
 post_bucket = client.bucket('Posts')
- 
 cr = post_bucket.new(str(post['post_id']), data=post)
 cr.store()
- 
-# key1 = myBucket.new('one', data=val1)
- 
- 
+
 define("port", default=8000, help="run on the given port", type=int)
+
+# for keys in post_bucket.stream_keys():
+#     for key in keys:
+#         print('Deleting %s' % key)
+#         post_bucket.delete(key)
 
 
 class Application(tornado.web.Application):
@@ -48,17 +54,22 @@ class Application(tornado.web.Application):
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
- 
+
+# https://riak-python-client.readthedocs.org/en/1.5-stable/tutorial.html
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
+        lst = []
+        x = post_bucket.get_keys()
+        for i in range(1, len(x)+1):
+            entries = post_bucket.get(str(i)).data
+            lst.append(entries)
+
         self.render(
             "index.html",
             title="Home Page",
-            header="All entries",
-            # data=post_bucket.get('1')
-            data=post_bucket.get_index(self, '1')
+            data=lst
         )
- 
+
  
 class PostHandler(tornado.web.RequestHandler):
     def get(self, post_id):
@@ -76,11 +87,14 @@ class AddPostHandler(tornado.web.RequestHandler):
         author = self.get_argument('author')
         d = {'name': name,
              'body': body,
-             'author': author}
-        entry = post_bucket.new('2', data=d)
+             'author': author,
+             'created_date': str(datetime.date.today()),
+             'type': 'post'}
+        new_key = sorted(post_bucket.get_keys())
+        k = int(new_key[-1]) + 1
+        entry = post_bucket.new(str(k), data=d)
         entry.store()
-        self.render('add_post.html', data=d)
-
+        self.redirect('/post/%s' % entry.key)
 
 
 if __name__ == "__main__":
